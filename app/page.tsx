@@ -53,6 +53,34 @@ const BASE_SET_TARGET = 25;
 const DECIDING_SET_TARGET = 15;
 const MAX_SETS_TO_WIN = 3; 
 
+const getTeamSideTheme = (teamIndex: TeamIndex) => {
+  if (teamIndex === 0) {
+    return {
+      outer: "border-rose-500 bg-rose-950/80",
+      outerActive: "animate-shake border-yellow-400 bg-rose-900",
+      headerBorder: "border-rose-800",
+      scoreBorder: "border-rose-500/30",
+      scoreAccent: "text-rose-400/60",
+      shortNameText: "text-rose-300",
+      pulseText: "text-rose-400",
+      setCountText: "text-rose-400",
+      buttonTint: "border-rose-500/20 text-rose-400",
+    };
+  }
+
+  return {
+    outer: "border-blue-500 bg-blue-950/80",
+    outerActive: "animate-shake border-yellow-400 bg-blue-900",
+    headerBorder: "border-blue-800",
+    scoreBorder: "border-blue-500/30",
+    scoreAccent: "text-cyan-400/60",
+    shortNameText: "text-blue-300",
+    pulseText: "text-cyan-400",
+    setCountText: "text-blue-400",
+    buttonTint: "border-blue-500/20 text-cyan-400",
+  };
+};
+
 // ==========================================
 // AUDIO SYNTHESIZER (WEB AUDIO API)
 // ==========================================
@@ -160,8 +188,16 @@ export default function Home() {
   // References untuk Animasi Interpolasi Skor
   const frameRef = useRef<number | null>(null);
   const displayScoresRef = useRef(displayScores);
-  const leftScore = teams[0].score;
-  const rightScore = teams[1].score;
+  const isCourtSwapped = setHistory.length % 2 === 0;
+  const leftTeamIndex: TeamIndex = isCourtSwapped ? 1 : 0;
+  const rightTeamIndex: TeamIndex = leftTeamIndex === 0 ? 1 : 0;
+  const leftTeam = teams[leftTeamIndex];
+  const rightTeam = teams[rightTeamIndex];
+  const leftScore = leftTeam.score;
+  const rightScore = rightTeam.score;
+  const leftTheme = getTeamSideTheme(leftTeamIndex);
+  const rightTheme = getTeamSideTheme(rightTeamIndex);
+  const currentSetNumber = setHistory.length + 1;
 
   useEffect(() => {
     displayScoresRef.current = displayScores;
@@ -418,10 +454,12 @@ export default function Home() {
               <h1 className="text-xl font-black tracking-wider uppercase text-white">
                 Pordes Volly Jomblang 2026
               </h1>
-              <div className="flex items-center gap-3 mt-0.5 text-sm text-slate-400">
+              <div className="flex flex-wrap items-center gap-3 mt-0.5 text-sm text-slate-400">
                 <span>STATUS MATCH: <strong className="text-yellow-400 font-black">{matchStatus}</strong></span>
                 <span>•</span>
                 <span>SET TARGET: <strong className="text-emerald-400 font-black">{currentSetTarget} POIN</strong></span>
+                <span>•</span>
+                <span>SET <strong className="text-cyan-400 font-black">{currentSetNumber}</strong> | KANAN: <strong className="text-white font-black">{rightTeam.name}</strong></span>
               </div>
             </div>
           </div>
@@ -463,12 +501,12 @@ export default function Home() {
               <div className="grid grid-cols-[auto_1fr_auto_1fr_auto] items-stretch overflow-hidden rounded-2xl border-2 border-white/10 bg-black">
                 
                 {/* Tim Kiri Panel */}
-                <div className={`flex items-center gap-4 px-6 py-4 bg-rose-950/40 border-r border-white/5`}>
-                  {servingTeam === 0 && <span className="h-6 w-6 rounded-full bg-yellow-400 animate-ping absolute" />}
-                  {servingTeam === 0 && <span className="h-6 w-6 rounded-full bg-yellow-400 relative z-10 shadow-[0_0_20px_#facc15]" />}
+                <div className={`flex items-center gap-4 px-6 py-4 ${leftTeamIndex === 0 ? "bg-rose-950/40" : "bg-blue-950/40"} border-r border-white/5`}>
+                  {servingTeam === leftTeamIndex && <span className="h-6 w-6 rounded-full bg-yellow-400 animate-ping absolute" />}
+                  {servingTeam === leftTeamIndex && <span className="h-6 w-6 rounded-full bg-yellow-400 relative z-10 shadow-[0_0_20px_#facc15]" />}
                   <input
-                    value={teams[0].name}
-                    onChange={(e) => updateTeam(0, (t) => ({ ...t, name: e.target.value }))}
+                    value={leftTeam.name}
+                    onChange={(e) => updateTeam(leftTeamIndex, (t) => ({ ...t, name: e.target.value }))}
                     className="w-36 bg-transparent text-xl font-black uppercase tracking-wide text-white outline-none"
                   />
                 </div>
@@ -476,8 +514,8 @@ export default function Home() {
                 {/* Skor Kiri Click Target */}
                 <button
                   type="button"
-                  onClick={() => addPoint(0)}
-                  className={`bg-slate-900 px-6 text-center transition hover:bg-slate-800 border-r border-white/5 ${pulseTeam === 0 ? "animate-flash text-rose-400" : "text-white"}`}
+                  onClick={() => addPoint(leftTeamIndex)}
+                  className={`bg-slate-900 px-6 text-center transition hover:bg-slate-800 border-r border-white/5 ${pulseTeam === leftTeamIndex ? `animate-flash ${leftTheme.pulseText}` : "text-white"}`}
                 >
                   <span className="font-mono text-7xl sm:text-8xl font-black tabular-nums tracking-tighter block">{displayScores[0]}</span>
                 </button>
@@ -487,30 +525,30 @@ export default function Home() {
                   <span className="text-xs font-black tracking-widest text-slate-500">WAKTU</span>
                   <span className="text-2xl font-black font-mono tracking-tight text-cyan-400 mt-1 tabular-nums">{formatClock(clock)}</span>
                   <div className="mt-3 flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-md border border-white/10">
-                    <span className="text-lg font-black text-rose-400 font-mono">{teams[0].sets}</span>
+                    <span className={`text-lg font-black font-mono ${leftTheme.setCountText}`}>{leftTeam.sets}</span>
                     <span className="text-[10px] font-black text-slate-500 tracking-wider">SETS</span>
-                    <span className="text-lg font-black text-blue-400 font-mono">{teams[1].sets}</span>
+                    <span className={`text-lg font-black font-mono ${rightTheme.setCountText}`}>{rightTeam.sets}</span>
                   </div>
                 </div>
 
                 {/* Skor Kanan Click Target */}
                 <button
                   type="button"
-                  onClick={() => addPoint(1)}
-                  className={`bg-slate-900 px-6 text-center transition hover:bg-slate-800 border-l border-white/5 ${pulseTeam === 1 ? "animate-flash text-cyan-400" : "text-white"}`}
+                  onClick={() => addPoint(rightTeamIndex)}
+                  className={`bg-slate-900 px-6 text-center transition hover:bg-slate-800 border-l border-white/5 ${pulseTeam === rightTeamIndex ? `animate-flash ${rightTheme.pulseText}` : "text-white"}`}
                 >
                   <span className="font-mono text-7xl sm:text-8xl font-black tabular-nums tracking-tighter block">{displayScores[1]}</span>
                 </button>
 
                 {/* Tim Kanan Panel */}
-                <div className={`flex items-center justify-end gap-4 px-6 py-4 bg-blue-950/40 border-l border-white/5`}>
+                <div className={`flex items-center justify-end gap-4 px-6 py-4 ${rightTeamIndex === 0 ? "bg-rose-950/40" : "bg-blue-950/40"} border-l border-white/5`}>
                   <input
-                    value={teams[1].name}
-                    onChange={(e) => updateTeam(1, (t) => ({ ...t, name: e.target.value }))}
+                    value={rightTeam.name}
+                    onChange={(e) => updateTeam(rightTeamIndex, (t) => ({ ...t, name: e.target.value }))}
                     className="w-36 bg-transparent text-right text-xl font-black uppercase tracking-wide text-white outline-none"
                   />
-                  {servingTeam === 1 && <span className="h-6 w-6 rounded-full bg-yellow-400 animate-ping absolute" />}
-                  {servingTeam === 1 && <span className="h-6 w-6 rounded-full bg-yellow-400 relative z-10 shadow-[0_0_20px_#facc15]" />}
+                  {servingTeam === rightTeamIndex && <span className="h-6 w-6 rounded-full bg-yellow-400 animate-ping absolute" />}
+                  {servingTeam === rightTeamIndex && <span className="h-6 w-6 rounded-full bg-yellow-400 relative z-10 shadow-[0_0_20px_#facc15]" />}
                 </div>
 
               </div>
@@ -518,8 +556,8 @@ export default function Home() {
               {/* Quick Controller Footer di Compact Mode */}
               <div className="flex items-center justify-between mt-4 px-2">
                 <div className="flex gap-3">
-                  <button onClick={() => removePoint(0)} className="text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/10">- TIM KIRI</button>
-                  <button onClick={() => requestTimeout(0)} className="text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-4 py-2 rounded-xl border border-amber-500/20">T.O KIRI</button>
+                  <button onClick={() => removePoint(leftTeamIndex)} className="text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/10">- TIM KIRI</button>
+                  <button onClick={() => requestTimeout(leftTeamIndex)} className="text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-4 py-2 rounded-xl border border-amber-500/20">T.O KIRI</button>
                 </div>
                 <button 
                   onClick={() => setMatchStatus(matchStatus === "LIVE" ? "READY" : "LIVE")}
@@ -528,8 +566,8 @@ export default function Home() {
                   {matchStatus === "LIVE" ? "PAUSE CLOCK" : "START CLOCK"}
                 </button>
                 <div className="flex gap-3">
-                  <button onClick={() => requestTimeout(1)} className="text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-4 py-2 rounded-xl border border-amber-500/20">T.O KANAN</button>
-                  <button onClick={() => removePoint(1)} className="text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/10">- TIM KANAN</button>
+                  <button onClick={() => requestTimeout(rightTeamIndex)} className="text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-4 py-2 rounded-xl border border-amber-500/20">T.O KANAN</button>
+                  <button onClick={() => removePoint(rightTeamIndex)} className="text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/10">- TIM KANAN</button>
                 </div>
               </div>
             </div>
@@ -544,38 +582,38 @@ export default function Home() {
             
             {/* PANEL SEKTOR TIM KIRI (KONTRAST TINGGI) */}
             <article className={`flex flex-col justify-between rounded-3xl border-4 transition-all duration-200 p-6 ${
-              triggerShake === 0 ? "animate-shake border-yellow-400 bg-rose-900" : "border-rose-500 bg-rose-950/80"
+              triggerShake === leftTeamIndex ? leftTheme.outerActive : leftTheme.outer
             } ${setPointStatus === 0 ? "ring-8 ring-yellow-400 shadow-[0_0_60px_rgba(250,204,21,0.3)] animate-pulse" : "shadow-xl"}`}>
               
-              <div className="flex items-center justify-between gap-4 border-b-2 border-rose-800 pb-4">
+              <div className={`flex items-center justify-between gap-4 border-b-2 pb-4 ${leftTheme.headerBorder}`}>
                 <div className="flex items-center gap-3">
-                  {servingTeam === 0 && (
+                  {servingTeam === leftTeamIndex && (
                     <div className="relative flex h-6 w-6">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-6 w-6 bg-yellow-400 shadow-[0_0_15px_#facc15]"></span>
                     </div>
                   )}
                   <input
-                    value={teams[0].name}
-                    onChange={(e) => updateTeam(0, (t) => ({ ...t, name: e.target.value }))}
+                    value={leftTeam.name}
+                    onChange={(e) => updateTeam(leftTeamIndex, (t) => ({ ...t, name: e.target.value }))}
                     className="bg-transparent text-3xl font-black uppercase tracking-wide text-white outline-none focus:bg-black/30 rounded px-2 py-1"
                   />
                 </div>
-                <div className="bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black text-rose-300">
-                  {teams[0].shortName}
+                <div className={`bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black ${leftTheme.shortNameText}`}>
+                  {leftTeam.shortName}
                 </div>
               </div>
 
               {/* RAKSASA SCORE PANEL - TERBACA DARI 50 METER */}
               <div className="my-4 flex-1 flex flex-col justify-center">
                 <div 
-                  onClick={() => addPoint(0)}
-                  className="cursor-pointer rounded-2xl bg-black border-2 border-rose-500/30 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900"
+                  onClick={() => addPoint(leftTeamIndex)}
+                  className={`cursor-pointer rounded-2xl bg-black border-2 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900 ${leftTheme.scoreBorder}`}
                 >
-                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white transition-transform ${pulseTeam === 0 ? "scale-105 text-yellow-300" : ""}`}>
-                    {teams[0].score}
+                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white transition-transform ${pulseTeam === leftTeamIndex ? `scale-105 ${leftTheme.pulseText}` : ""}`}>
+                    {leftTeam.score}
                   </div>
-                  <span className="text-xs font-black tracking-[0.4em] text-rose-400/60 block mt-2 uppercase">TAP AREA UNTUK TAMBAH SKOR (+1)</span>
+                  <span className={`text-xs font-black tracking-[0.4em] block mt-2 uppercase ${leftTheme.scoreAccent}`}>TAP AREA UNTUK TAMBAH SKOR (+1)</span>
                 </div>
               </div>
 
@@ -584,14 +622,14 @@ export default function Home() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => addPoint(0)}
+                    onClick={() => addPoint(leftTeamIndex)}
                     className="rounded-xl bg-emerald-500 text-slate-950 px-6 py-3 text-sm font-black transition hover:brightness-110 active:scale-95 shadow-lg"
                   >
                     POIN TIM L (Q)
                   </button>
                   <button
                     type="button"
-                    onClick={() => removePoint(0)}
+                    onClick={() => removePoint(leftTeamIndex)}
                     className="rounded-xl bg-slate-900 border border-white/20 px-4 py-3 text-xs font-black text-slate-300 hover:bg-slate-800"
                   >
                     KURANG (A)
@@ -603,23 +641,23 @@ export default function Home() {
                     <span className="text-[10px] font-bold text-slate-400 uppercase block">TIMEOUT</span>
                     <div className="flex gap-1 mt-1">
                       {[1, 2].map((num) => (
-                        <span key={num} className={`h-3 w-5 rounded-sm ${teams[0].timeoutsUsed >= num ? "bg-yellow-400" : "bg-slate-800"}`} />
+                        <span key={num} className={`h-3 w-5 rounded-sm ${leftTeam.timeoutsUsed >= num ? "bg-yellow-400" : "bg-slate-800"}`} />
                       ))}
                     </div>
                   </div>
                   <button
                     type="button"
-                    disabled={teams[0].timeoutsUsed >= 2}
-                    onClick={() => requestTimeout(0)}
-                    className="rounded-lg bg-amber-500/20 border border-amber-500/40 px-3 py-1 text-xs font-bold text-amber-400 disabled:opacity-20"
+                    disabled={leftTeam.timeoutsUsed >= 2}
+                    onClick={() => requestTimeout(leftTeamIndex)}
+                    className={`rounded-lg bg-amber-500/20 border px-3 py-1 text-xs font-bold disabled:opacity-20 ${leftTheme.buttonTint}`}
                   >
                     MINTA T.O (Z)
                   </button>
                 </div>
 
-                <div className="bg-black px-5 py-2 rounded-xl border border-white/10 text-center min-w-24">
-                  <span className="text-[10px] font-black tracking-wider text-slate-400 block uppercase">MENANG SET</span>
-                  <span className="text-3xl font-black font-mono text-yellow-400 block mt-0.5">{teams[0].sets}</span>
+                <div className="bg-black px-6 py-3 rounded-2xl border border-white/10 text-center min-w-28 shadow-lg">
+                  <span className="text-[11px] font-black tracking-[0.35em] text-slate-300 block uppercase">MENANG SET</span>
+                  <span className={`text-5xl sm:text-6xl font-black font-mono leading-none block mt-1 ${leftTheme.setCountText}`}>{leftTeam.sets}</span>
                 </div>
               </div>
 
@@ -684,82 +722,82 @@ export default function Home() {
 
             {/* PANEL SEKTOR TIM KANAN (KONTRAST TINGGI) */}
             <article className={`flex flex-col justify-between rounded-3xl border-4 transition-all duration-200 p-6 ${
-              triggerShake === 1 ? "animate-shake border-yellow-400 bg-blue-900" : "border-blue-500 bg-blue-950/80"
+              triggerShake === rightTeamIndex ? rightTheme.outerActive : rightTheme.outer
             } ${setPointStatus === 1 ? "ring-8 ring-yellow-400 shadow-[0_0_60px_rgba(250,204,21,0.3)] animate-pulse" : "shadow-xl"}`}>
               
-              <div className="flex items-center justify-between gap-4 border-b-2 border-blue-800 pb-4">
-                <div className="bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black text-blue-300">
-                  {teams[1].shortName}
-                </div>
+              <div className={`flex items-center justify-between gap-4 border-b-2 pb-4 ${rightTheme.headerBorder}`}>
                 <div className="flex items-center gap-3">
-                  <input
-                    value={teams[1].name}
-                    onChange={(e) => updateTeam(1, (t) => ({ ...t, name: e.target.value }))}
-                    className="bg-transparent text-right text-3xl font-black uppercase tracking-wide text-white outline-none focus:bg-black/30 rounded px-2 py-1"
-                  />
-                  {servingTeam === 1 && (
+                  {servingTeam === rightTeamIndex && (
                     <div className="relative flex h-6 w-6">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-6 w-6 bg-yellow-400 shadow-[0_0_15px_#facc15]"></span>
                     </div>
                   )}
+                  <input
+                    value={rightTeam.name}
+                    onChange={(e) => updateTeam(rightTeamIndex, (t) => ({ ...t, name: e.target.value }))}
+                    className="bg-transparent text-3xl font-black uppercase tracking-wide text-white outline-none focus:bg-black/30 rounded px-2 py-1"
+                  />
+                </div>
+                <div className={`bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black ${rightTheme.shortNameText}`}>
+                  {rightTeam.shortName}
                 </div>
               </div>
 
               {/* RAKSASA SCORE PANEL - TERBACA DARI 50 METER */}
               <div className="my-4 flex-1 flex flex-col justify-center">
                 <div 
-                  onClick={() => addPoint(1)}
-                  className="cursor-pointer rounded-2xl bg-black border-2 border-blue-500/30 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900"
+                  onClick={() => addPoint(rightTeamIndex)}
+                  className={`cursor-pointer rounded-2xl bg-black border-2 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900 ${rightTheme.scoreBorder}`}
                 >
-                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white transition-transform ${pulseTeam === 1 ? "scale-105 text-yellow-300" : ""}`}>
-                    {teams[1].score}
+                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white transition-transform ${pulseTeam === rightTeamIndex ? `scale-105 ${rightTheme.pulseText}` : ""}`}>
+                    {rightTeam.score}
                   </div>
-                  <span className="text-xs font-black tracking-[0.4em] text-cyan-400/60 block mt-2 uppercase">TAP AREA UNTUK TAMBAH SKOR (+1)</span>
+                  <span className={`text-xs font-black tracking-[0.4em] block mt-2 uppercase ${rightTheme.scoreAccent}`}>TAP AREA UNTUK TAMBAH SKOR (+1)</span>
                 </div>
               </div>
 
               {/* KONTROL OPERATOR BAWAH */}
               <div className="border-t-2 border-blue-800 pt-4 flex flex-wrap items-center justify-between gap-4">
-                <div className="bg-black px-5 py-2 rounded-xl border border-white/10 text-center min-w-24">
-                  <span className="text-[10px] font-black tracking-wider text-slate-400 block uppercase">MENANG SET</span>
-                  <span className="text-3xl font-black font-mono text-yellow-400 block mt-0.5">{teams[1].sets}</span>
-                </div>
-
-                <div className="flex items-center gap-4 bg-black/40 border border-white/5 p-2 rounded-xl">
-                  <button
-                    type="button"
-                    disabled={teams[1].timeoutsUsed >= 2}
-                    onClick={() => requestTimeout(1)}
-                    className="rounded-lg bg-amber-500/20 border border-amber-500/40 px-3 py-1 text-xs font-bold text-amber-400 disabled:opacity-20"
-                  >
-                    MINTA T.O (M)
-                  </button>
-                  <div className="text-center border-l border-white/10 pl-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">TIMEOUT</span>
-                    <div className="flex gap-1 mt-1">
-                      {[1, 2].map((num) => (
-                        <span key={num} className={`h-3 w-5 rounded-sm ${teams[1].timeoutsUsed >= num ? "bg-yellow-400" : "bg-slate-800"}`} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => removePoint(1)}
-                    className="rounded-xl bg-slate-900 border border-white/20 px-4 py-3 text-xs font-black text-slate-300 hover:bg-slate-800"
-                  >
-                    KURANG (L)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPoint(1)}
+                    onClick={() => addPoint(rightTeamIndex)}
                     className="rounded-xl bg-emerald-500 text-slate-950 px-6 py-3 text-sm font-black transition hover:brightness-110 active:scale-95 shadow-lg"
                   >
                     POIN TIM R (P)
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => removePoint(rightTeamIndex)}
+                    className="rounded-xl bg-slate-900 border border-white/20 px-4 py-3 text-xs font-black text-slate-300 hover:bg-slate-800"
+                  >
+                    KURANG (L)
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-4 bg-black/40 border border-white/5 p-2 rounded-xl">
+                  <div className="text-center border-r border-white/10 pr-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">TIMEOUT</span>
+                    <div className="flex gap-1 mt-1">
+                      {[1, 2].map((num) => (
+                        <span key={num} className={`h-3 w-5 rounded-sm ${rightTeam.timeoutsUsed >= num ? "bg-yellow-400" : "bg-slate-800"}`} />
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={rightTeam.timeoutsUsed >= 2}
+                    onClick={() => requestTimeout(rightTeamIndex)}
+                    className={`rounded-lg bg-amber-500/20 border px-3 py-1 text-xs font-bold disabled:opacity-20 ${rightTheme.buttonTint}`}
+                  >
+                    MINTA T.O (M)
+                  </button>
+                </div>
+
+                <div className="bg-black px-6 py-3 rounded-2xl border border-white/10 text-center min-w-28 shadow-lg">
+                  <span className="text-[11px] font-black tracking-[0.35em] text-slate-300 block uppercase">MENANG SET</span>
+                  <span className={`text-5xl sm:text-6xl font-black font-mono leading-none block mt-1 ${rightTheme.setCountText}`}>{rightTeam.sets}</span>
                 </div>
               </div>
 
