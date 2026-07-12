@@ -41,22 +41,26 @@ const MAX_SETS_TO_WIN = 3;
 const getTeamSideTheme = (teamIndex: TeamIndex) => {
   if (teamIndex === 0) {
     return {
-      outer: "border-rose-500 bg-rose-950/80",
-      headerBorder: "border-rose-800",
-      scoreBorder: "border-rose-500/30",
-      scoreAccent: "text-rose-400/60",
-      shortNameText: "text-rose-300",
-      setCountText: "text-rose-400",
+      outer: "border-rose-200 bg-rose-50/90 shadow-rose-100",
+      headerBorder: "border-rose-200",
+      scoreBorder: "border-rose-300",
+      scoreAccent: "text-rose-500",
+      shortNameText: "text-rose-700 bg-rose-100",
+      setCountText: "text-rose-600",
+      scoreText: "text-rose-600",
+      inputText: "text-rose-900 placeholder-rose-400 focus:bg-rose-100/50"
     };
   }
 
   return {
-    outer: "border-blue-500 bg-blue-950/80",
-    headerBorder: "border-blue-800",
-    scoreBorder: "border-blue-500/30",
-    scoreAccent: "text-cyan-400/60",
-    shortNameText: "text-blue-300",
-    setCountText: "text-blue-400",
+    outer: "border-blue-200 bg-blue-50/90 shadow-blue-100",
+    headerBorder: "border-blue-200",
+    scoreBorder: "border-blue-300",
+    scoreAccent: "text-blue-500",
+    shortNameText: "text-blue-700 bg-blue-100",
+    setCountText: "text-blue-600",
+    scoreText: "text-blue-600",
+    inputText: "text-blue-900 placeholder-blue-400 focus:bg-blue-100/50"
   };
 };
 
@@ -147,31 +151,31 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-4 sm:p-6 text-slate-100 antialiased font-sans">
+    <main className={`min-h-screen px-4 py-4 sm:p-6 text-slate-100 antialiased font-sans transition-colors duration-300 ${viewMode === "large" ? "bg-slate-100" : "bg-slate-950"}`}>
       <div className="mx-auto max-w-7xl flex flex-col min-h-[calc(100vh-3rem)] gap-4">
         
         {/* UPPER CONSOLE BAR */}
-        <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-slate-900/95 p-4 shadow-xl">
+        <header className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4 shadow-xl transition-colors duration-300 ${viewMode === "large" ? "bg-white border-slate-200 shadow-slate-200/50" : "bg-slate-900/95 border-white/10"}`}>
           <div className="flex items-center gap-4">
             <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-500 shadow-md">
               <span className="text-2xl font-black text-slate-950">V</span>
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-wider uppercase text-white">
+              <h1 className={`text-xl font-black tracking-wider uppercase ${viewMode === "large" ? "text-slate-900" : "text-white"}`}>
                 Pordes Volly Jomblang 2026
               </h1>
               <div className="flex flex-wrap items-center gap-3 mt-0.5 text-sm text-slate-400">
                 {matchFinished ? (
-                  <span className="text-red-500 font-black animate-pulse">MATCH FINISHED</span>
+                  <span className="text-red-600 font-black animate-pulse">MATCH FINISHED</span>
                 ) : (
-                  <span>SET TARGET: <strong className="text-emerald-400 font-black">{currentSetTarget} POIN</strong></span>
+                  <span className={viewMode === "large" ? "text-slate-600" : "text-slate-400"}>SET TARGET: <strong className="text-emerald-600 font-black">{currentSetTarget} POIN</strong></span>
                 )}
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-xl bg-black p-1 border border-white/10">
+            <div className={`flex rounded-xl p-1 border ${viewMode === "large" ? "bg-slate-200 border-slate-300" : "bg-black border-white/10"}`}>
               {(["large", "compact"] as ViewMode[]).map((mode) => (
                 <button
                   key={mode}
@@ -179,8 +183,12 @@ export default function Home() {
                   onClick={() => setViewMode(mode)}
                   className={`rounded-lg px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${
                     viewMode === mode
-                      ? "bg-slate-800 text-yellow-400 shadow-inner border border-white/10"
-                      : "text-slate-400 hover:text-white"
+                      ? viewMode === "large" 
+                        ? "bg-white text-yellow-600 shadow-sm border border-slate-300"
+                        : "bg-slate-800 text-yellow-400 shadow-inner border border-white/10"
+                      : viewMode === "large"
+                        ? "text-slate-600 hover:text-slate-900"
+                        : "text-slate-400 hover:text-white"
                   }`}
                 >
                   {mode}
@@ -191,7 +199,7 @@ export default function Home() {
             <button
               type="button"
               onClick={resetAllBoard}
-              className="rounded-xl border-2 border-red-600 bg-red-600/20 px-5 py-1.5 text-xs font-black uppercase tracking-wider text-red-400 transition hover:bg-red-600 hover:text-white"
+              className="rounded-xl border-2 border-red-600 bg-red-600/10 px-5 py-1.5 text-xs font-black uppercase tracking-wider text-red-600 transition hover:bg-red-600 hover:text-white"
             >
               Reset Match
             </button>
@@ -227,9 +235,9 @@ export default function Home() {
                 {/* Pusat Divider Informasi */}
                 <div className="flex flex-col items-center justify-center bg-black px-8 min-w-32 text-center">
                   <div className="flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-md border border-white/10">
-                    <span className={`text-xl font-black font-mono ${leftTheme.setCountText}`}>{leftTeam.sets}</span>
+                    <span className="text-xl font-black font-mono text-rose-400">{leftTeam.sets}</span>
                     <span className="text-[10px] font-black text-slate-500 tracking-wider">SETS</span>
-                    <span className={`text-xl font-black font-mono ${rightTheme.setCountText}`}>{rightTeam.sets}</span>
+                    <span className="text-xl font-black font-mono text-blue-400">{rightTeam.sets}</span>
                   </div>
                 </div>
 
@@ -269,123 +277,110 @@ export default function Home() {
         )}
 
         {/* ==========================================
-            VIEW MODE 2: LARGE FIELD CONSOLE (HIGH VISIBILITY)
+            VIEW MODE 2: LARGE FIELD CONSOLE (MEPET KANAN KIRI)
             ========================================== */}
         {viewMode === "large" && (
-          <section className="grid flex-1 gap-4 md:grid-cols-[1fr_auto_1fr] items-stretch">
+          <section className="grid flex-1 gap-4 md:grid-cols-2 items-stretch">
             
             {/* PANEL TIM KIRI */}
-            <article className={`flex flex-col justify-between rounded-3xl border-4 p-6 shadow-xl ${leftTheme.outer}`}>
-              <div className={`flex items-center justify-between gap-4 border-b-2 pb-4 ${leftTheme.headerBorder}`}>
+            <article className={`flex flex-col justify-between rounded-3xl border-2 p-6 shadow-xl transition-all ${leftTheme.outer}`}>
+              <div className={`flex items-center justify-between gap-4 border-b pb-4 ${leftTheme.headerBorder}`}>
                 <input
                   value={leftTeam.name}
                   onChange={(e) => updateTeam(leftTeamIndex, (t) => ({ ...t, name: e.target.value }))}
-                  className="bg-transparent text-3xl font-black uppercase tracking-wide text-white outline-none focus:bg-black/30 rounded px-2 py-1 w-full"
+                  className={`bg-transparent text-3xl font-black uppercase tracking-wide outline-none rounded px-2 py-1 w-full transition-all ${leftTheme.inputText}`}
                 />
-                <div className={`bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black ${leftTheme.shortNameText}`}>
+                <div className={`border px-4 py-1.5 rounded-xl font-mono text-lg font-black shadow-sm ${leftTheme.shortNameText}`}>
                   {leftTeam.shortName}
                 </div>
               </div>
 
               {/* SCORE BOX */}
-              <div className="my-4 flex-1 flex flex-col justify-center">
+              <div className="my-6 flex-1 flex flex-col justify-center">
                 <div 
                   onClick={() => addPoint(leftTeamIndex)}
-                  className={`cursor-pointer rounded-2xl bg-black border-2 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900 ${leftTheme.scoreBorder}`}
+                  className={`cursor-pointer rounded-3xl bg-white border-2 p-8 text-center shadow-md transition-all hover:shadow-lg active:scale-[0.99] ${leftTheme.scoreBorder}`}
                 >
-                  <div className="text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white">
+                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none ${leftTheme.scoreText}`}>
                     {leftTeam.score}
                   </div>
-                  <span className={`text-xs font-black tracking-[0.4em] block mt-2 uppercase ${leftTheme.scoreAccent}`}>TAP UNTUK TAMBAH SKOR</span>
+                  <span className={`text-xs font-bold tracking-[0.4em] block mt-2 uppercase ${leftTheme.scoreAccent}`}>TAP UNTUK TAMBAH SKOR</span>
                 </div>
               </div>
 
               {/* KONTROL EDIT BAWAH */}
-              <div className="border-t-2 border-white/10 pt-4 flex flex-wrap items-center justify-between gap-4">
+              <div className="border-t border-slate-200 pt-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => addPoint(leftTeamIndex)}
-                    className="rounded-xl bg-emerald-500 text-slate-950 px-6 py-3 text-sm font-black shadow-lg"
+                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-sm font-black shadow-md active:scale-95 transition-all"
                   >
                     POIN (+1)
                   </button>
                   <button
                     type="button"
                     onClick={() => removePoint(leftTeamIndex)}
-                    className="rounded-xl bg-slate-900 border border-white/20 px-4 py-3 text-xs font-black text-slate-300"
+                    className="rounded-xl bg-white border border-slate-300 hover:bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 shadow-sm active:scale-95 transition-all"
                   >
                     KURANG (-1)
                   </button>
                 </div>
 
-                <div className="bg-black px-6 py-3 rounded-2xl border border-white/10 text-center min-w-28 shadow-lg">
-                  <span className="text-[11px] font-black tracking-[0.35em] text-slate-300 block uppercase">SET WIN</span>
+                <div className="bg-white px-6 py-3 rounded-2xl border border-slate-200 text-center min-w-28 shadow-sm">
+                  <span className="text-[11px] font-bold tracking-[0.35em] text-slate-400 block uppercase">SET WIN</span>
                   <span className={`text-5xl font-black font-mono leading-none block mt-1 ${leftTheme.setCountText}`}>{leftTeam.sets}</span>
                 </div>
               </div>
             </article>
 
-            {/* SEKTOR TENGAH - INDIKATOR LAPANGAN */}
-            <div className="flex flex-col items-center justify-center gap-4 py-2 min-w-48 text-center bg-black/40 border border-white/10 rounded-2xl p-4">
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 block">TOTAL SETS PLAYED</span>
-              <p className="text-4xl font-black font-mono tracking-tight text-cyan-400 bg-black px-6 py-2 rounded-xl border border-white/5">{totalSetsPlayed}</p>
-              
-              <div className="text-xs font-mono mt-4 text-slate-400">
-                <div className="bg-slate-900 p-2.5 rounded-lg border border-white/5">
-                  <span className="font-bold block text-[10px] text-slate-500 uppercase">Selisih Poin</span>
-                  <span className="font-black text-white text-base block mt-0.5">{Math.abs(leftTeam.score - rightTeam.score)} Poin</span>
-                </div>
-              </div>
-            </div>
-
             {/* PANEL TIM KANAN */}
-            <article className={`flex flex-col justify-between rounded-3xl border-4 p-6 shadow-xl ${rightTheme.outer}`}>
-              <div className={`flex items-center justify-between gap-4 border-b-2 pb-4 ${rightTheme.headerBorder}`}>
+            <article className={`flex flex-col justify-between rounded-3xl border-2 p-6 shadow-xl transition-all ${rightTheme.outer}`}>
+              <div className={`flex items-center justify-between gap-4 border-b pb-4 ${rightTheme.headerBorder}`}>
                 <input
                   value={rightTeam.name}
                   onChange={(e) => updateTeam(rightTeamIndex, (t) => ({ ...t, name: e.target.value }))}
-                  className="bg-transparent text-3xl font-black uppercase tracking-wide text-white outline-none focus:bg-black/30 rounded px-2 py-1 w-full"
+                  className={`bg-transparent text-3xl font-black uppercase tracking-wide outline-none rounded px-2 py-1 w-full transition-all ${rightTheme.inputText}`}
                 />
-                <div className={`bg-black/40 border border-white/10 px-4 py-1.5 rounded-xl font-mono text-lg font-black ${rightTheme.shortNameText}`}>
+                <div className={`border px-4 py-1.5 rounded-xl font-mono text-lg font-black shadow-sm ${rightTheme.shortNameText}`}>
                   {rightTeam.shortName}
                 </div>
               </div>
 
               {/* SCORE BOX */}
-              <div className="my-4 flex-1 flex flex-col justify-center">
+              <div className="my-6 flex-1 flex flex-col justify-center">
                 <div 
                   onClick={() => addPoint(rightTeamIndex)}
-                  className={`cursor-pointer rounded-2xl bg-black border-2 p-8 text-center shadow-2xl transition hover:border-white/40 active:bg-slate-900 ${rightTheme.scoreBorder}`}
+                  className={`cursor-pointer rounded-3xl bg-white border-2 p-8 text-center shadow-md transition-all hover:shadow-lg active:scale-[0.99] ${rightTheme.scoreBorder}`}
                 >
-                  <div className="text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none text-white">
+                  <div className={`text-[12rem] sm:text-[16rem] font-black font-mono tracking-tighter leading-none ${rightTheme.scoreText}`}>
                     {rightTeam.score}
                   </div>
-                  <span className={`text-xs font-black tracking-[0.4em] block mt-2 uppercase ${rightTheme.scoreAccent}`}>TAP UNTUK TAMBAH SKOR</span>
+                  <span className={`text-xs font-bold tracking-[0.4em] block mt-2 uppercase ${rightTheme.scoreAccent}`}>TAP UNTUK TAMBAH SKOR</span>
                 </div>
               </div>
 
               {/* KONTROL EDIT BAWAH */}
-              <div className="border-t-2 border-white/10 pt-4 flex flex-wrap items-center justify-between gap-4">
+              <div className="border-t border-slate-200 pt-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => addPoint(rightTeamIndex)}
-                    className="rounded-xl bg-emerald-500 text-slate-950 px-6 py-3 text-sm font-black shadow-lg"
+                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-sm font-black shadow-md active:scale-95 transition-all"
                   >
                     POIN (+1)
                   </button>
                   <button
                     type="button"
                     onClick={() => removePoint(rightTeamIndex)}
-                    className="rounded-xl bg-slate-900 border border-white/20 px-4 py-3 text-xs font-black text-slate-300"
+                    className="rounded-xl bg-white border border-slate-300 hover:bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 shadow-sm active:scale-95 transition-all"
                   >
                     KURANG (-1)
                   </button>
                 </div>
 
-                <div className="bg-black px-6 py-3 rounded-2xl border border-white/10 text-center min-w-28 shadow-lg">
-                  <span className="text-[11px] font-black tracking-[0.35em] text-slate-300 block uppercase">SET WIN</span>
+                <div className="bg-white px-6 py-3 rounded-2xl border border-slate-200 text-center min-w-28 shadow-sm">
+                  <span className="text-[11px] font-bold tracking-[0.35em] text-slate-400 block uppercase">SET WIN</span>
                   <span className={`text-5xl font-black font-mono leading-none block mt-1 ${rightTheme.setCountText}`}>{rightTeam.sets}</span>
                 </div>
               </div>
